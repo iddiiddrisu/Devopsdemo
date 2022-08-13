@@ -37,10 +37,6 @@ variable "secgroup_single_multiregion_rds_to_port" {}
 variable "secgroup_single_multiregion_rds_allowed_ingress_cidr" {}
 variable "secgroup_mysql_allow_egress_cidrs_list" {}
 
-variable "secgroup_scheduler_ec2_group_name" {}
-variable "secgroup_scheduler_ec2_ingress_cidr_list" {}
-variable "secgroup_scheduler_ec2_ingress_rules_list" {}
-variable "secgroup_scheduler_ec2_allow_egress_cidrs_list" {}
 variable "secgroup_product_name" {}
 variable "secgroup_caller_id" {}
 variable "secgroup_environment"{}

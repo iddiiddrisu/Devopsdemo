@@ -79,9 +79,6 @@ variable "var_rds_aurora_multiregion_parameter_max_con" {}
 
 variable "var_global_mysql_port" {}
 
-variable "var_secgroup_scheduler_ec2_allow_egress_cidrs_list" {}
-variable "var_secgroup_scheduler_ec2_group_name" {}
-variable "var_secgroup_scheduler_ec2_ingress_rules_list" {}
 
 # Load balancer Vars
 variable "var_load_balancer_default_tg_name" {}
@@ -122,3 +119,8 @@ variable "var_rds_aurora_mr_second_publicly_assessible" {
 variable "var_rds_aurora_mr_skip_final_snapshot" {
   type = bool
 }
+
+#EC2 Vars
+variable "var_global_ec2instance_aws_ami_owner_list" {}
+variable "var_global_ec2instance_filter_full_ref_list" {}
+variable "var_global_ec2instance_filter_virtualiazation_type_list" {}

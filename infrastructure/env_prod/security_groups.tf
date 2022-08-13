@@ -19,10 +19,6 @@ module "securitygroups" {
   secgroup_public_elb_allow_egress_cidrs_list          = var.var_secgroup_public_elb_allow_egress_cidrs_list
   secgroup_single_multiregion_rds_allowed_ingress_cidr = var.var_secgroup_single_multiregion_rds_allowed_ingress_cidr
 
-  secgroup_scheduler_ec2_allow_egress_cidrs_list = var.var_secgroup_scheduler_ec2_allow_egress_cidrs_list
-  secgroup_scheduler_ec2_group_name              = "${local.global_prefix}-${var.var_secgroup_scheduler_ec2_group_name}"
-  secgroup_scheduler_ec2_ingress_cidr_list       = [var.vpc_cidr]
-  secgroup_scheduler_ec2_ingress_rules_list      = var.var_secgroup_scheduler_ec2_ingress_rules_list
   secgroup_caller_id                             = data.aws_caller_identity.current.arn
   secgroup_product_name                          = var.var_global_product
   secgroup_environment                           = var.var_global_aws_environment
