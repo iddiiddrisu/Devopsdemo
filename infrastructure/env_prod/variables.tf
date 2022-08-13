@@ -57,3 +57,33 @@ variable "vpc_private_subnets_cidrs" {
 variable "vpc_public_subnets_cidrs" {
   type = list(string)
 }
+
+
+# Security Group Vars
+variable "var_secgroup_app_ecs_allow_egress_cidrs_list" {}
+variable "var_secgroup_jumpbox_ec2_allow_egress_cidrs_list" {}
+variable "var_secgroup_mongo_ec2_allow_egress_cidrs_list" {}
+variable "var_secgroup_mysql_allow_egress_cidrs_list" {}
+variable "var_secgroup_public_elb_allow_egress_cidrs_list" {}
+variable "var_secgroup_single_multiregion_rds_allowed_ingress_cidr" {}
+variable "var_secgroup_app_ecs_group_name" {}
+variable "var_secgroup_app_ecs_to_port" {}
+variable "var_secgroup_app_ecs_from_port" {}
+variable "var_secgroup_jumpbox_ec2_ingress_cidr_list" {}
+variable "var_secgroup_jumpbox_ec2_group_name" {}
+variable "var_secgroup_jumpbox_ec2_ingress_rules_list" {}
+variable "var_secgroup_public_elb_group_name" {}
+variable "var_secgroup_public_elb_group_rule_list" {}
+variable "var_secgroup_single_multiregion_rds_group_name" {}
+variable "var_secgroup_public_elb_allow_ingress_waf_cidrs_list" {}
+variable "var_rds_aurora_multiregion_parameter_max_con" {}
+
+variable "var_global_mysql_port" {}
+
+variable "var_secgroup_scheduler_ec2_allow_egress_cidrs_list" {}
+variable "var_secgroup_scheduler_ec2_group_name" {}
+variable "var_secgroup_scheduler_ec2_ingress_rules_list" {}
+
+# Load balancer Vars
+variable "var_load_balancer_default_tg_name" {}
+variable "var_load_balancer_name" {}

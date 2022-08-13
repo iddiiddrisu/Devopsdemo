@@ -1,3 +1,6 @@
+######################################################################
+###################### Network Section ###############################
+#Creating AWS VPC
 module "network" {
   source = "terraform-aws-modules/vpc/aws"
 
@@ -19,6 +22,7 @@ module "network" {
       Product = var.network_product_name
       ENV = var.network_global_environment
   }
+  # Private subnet configuration
   private_subnet_tags = {
     Name = "${var.network_name}-private-subnet"
     Terraform = true
@@ -26,12 +30,15 @@ module "network" {
     ENV = var.network_global_environment
   }
 
+  # Public subnet configurations
   public_subnet_tags = {
     Name = "${var.network_name}-public-subnet"
     Terraform = true
     Product = var.network_product_name
     ENV = var.network_global_environment
   }
+
+  #Private DB subnet configurations
   database_subnet_tags = {
     Name = "${var.network_name}-database-subnet"
     Terraform = true
