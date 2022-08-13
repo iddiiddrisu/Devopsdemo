@@ -86,3 +86,39 @@ variable "var_secgroup_scheduler_ec2_ingress_rules_list" {}
 # Load balancer Vars
 variable "var_load_balancer_default_tg_name" {}
 variable "var_load_balancer_name" {}
+
+#RDS Vars
+variable "var_rds_aurora_mr_apply_immediately" {
+  type = bool
+}
+variable "var_rds_aurora_mr_cloudwatch_logs_exports" {
+  type = list(string)
+}
+variable "var_rds_aurora_mr_cluster_gr_family" {}
+variable "var_rds_aurora_mr_cluster_param_gr_name" {}
+variable "var_rds_aurora_mr_create_db_subnet_group" {}
+variable "var_rds_aurora_mr_create_security_group" {}
+variable "var_rds_aurora_mr_database_name" {}
+variable "var_rds_aurora_mr_engine" {}
+variable "var_rds_aurora_mr_engine_version" {}
+variable "var_rds_aurora_mr_first_instance_class" {}
+variable "var_rds_aurora_mr_first_instance_identifier" {}
+variable "var_rds_aurora_mr_first_publicly_assessible" {
+  type = bool
+}
+variable "var_rds_aurora_mr_iam_authentication_enable" {
+  type = bool
+}
+variable "var_rds_aurora_mr_identifier" {}
+variable "var_rds_aurora_mr_master_password" {}
+variable "var_rds_aurora_mr_master_username" {}
+variable "var_rds_aurora_mr_param_gr_family" {}
+variable "var_rds_aurora_mr_param_gr_name" {}
+variable "var_rds_aurora_mr_second_instance_class" {}
+variable "var_rds_aurora_mr_second_instance_identifier" {}
+variable "var_rds_aurora_mr_second_publicly_assessible" {
+  type = bool
+}
+variable "var_rds_aurora_mr_skip_final_snapshot" {
+  type = bool
+}
