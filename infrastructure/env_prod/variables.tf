@@ -62,7 +62,6 @@ variable "vpc_public_subnets_cidrs" {
 # Security Group Vars
 variable "var_secgroup_app_ecs_allow_egress_cidrs_list" {}
 variable "var_secgroup_jumpbox_ec2_allow_egress_cidrs_list" {}
-variable "var_secgroup_mongo_ec2_allow_egress_cidrs_list" {}
 variable "var_secgroup_mysql_allow_egress_cidrs_list" {}
 variable "var_secgroup_public_elb_allow_egress_cidrs_list" {}
 variable "var_secgroup_single_multiregion_rds_allowed_ingress_cidr" {}
