@@ -21,3 +21,39 @@ variable "var_iam_ecs_task_loggroup_resources_list" {
 variable "var_iam_ecs_task_policy_name" {}
 variable "var_iam_ecs_task_role_name" {}
 variable "var_iam_ec2_secret_manager_readwrite_resource_name" {}
+
+
+#Network Vars
+variable "vpc_cidr" {
+  type = string
+}
+variable "vpc_create_database_subnet" {
+  type = string
+}
+variable "vpc_database_subnet_group_name" {
+  type = string
+}
+variable "vpc_enable_hostname" {
+  type = string
+}
+variable "vpc_enable_nat_gateway" {
+  type = bool
+}
+variable "vpc_enable_single_nat_gateway" {
+  type = bool
+}
+variable "vpc_global_environment" {
+  type = string
+}
+variable "vpc_name" {
+  type = string
+}
+variable "vpc_private_database_subnets_cidrs" {
+  type = list(string)
+}
+variable "vpc_private_subnets_cidrs" {
+  type = list(string)
+}
+variable "vpc_public_subnets_cidrs" {
+  type = list(string)
+}
