@@ -76,7 +76,6 @@ variable "var_secgroup_public_elb_group_rule_list" {}
 variable "var_secgroup_single_multiregion_rds_group_name" {}
 variable "var_secgroup_public_elb_allow_ingress_waf_cidrs_list" {}
 variable "var_rds_aurora_multiregion_parameter_max_con" {}
-
 variable "var_global_mysql_port" {}
 
 
