@@ -110,11 +110,6 @@ variable "var_rds_aurora_mr_master_password" {}
 variable "var_rds_aurora_mr_master_username" {}
 variable "var_rds_aurora_mr_param_gr_family" {}
 variable "var_rds_aurora_mr_param_gr_name" {}
-variable "var_rds_aurora_mr_second_instance_class" {}
-variable "var_rds_aurora_mr_second_instance_identifier" {}
-variable "var_rds_aurora_mr_second_publicly_assessible" {
-  type = bool
-}
 variable "var_rds_aurora_mr_skip_final_snapshot" {
   type = bool
 }

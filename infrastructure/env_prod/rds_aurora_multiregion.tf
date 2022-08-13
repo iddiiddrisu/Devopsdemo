@@ -22,9 +22,6 @@ module "rds_aurora_multiregion" {
   rds_aurora_multiregion_param_gr_family             = var.var_rds_aurora_mr_param_gr_family
   rds_aurora_multiregion_param_gr_name               = var.var_rds_aurora_mr_param_gr_name
   rds_aurora_multiregion_product_name                = var.var_global_product
-  rds_aurora_multiregion_second_instance_class       = var.var_rds_aurora_mr_second_instance_class
-  rds_aurora_multiregion_second_instance_identifier  = "${local.global_prefix}-${var.var_rds_aurora_mr_second_instance_identifier}"
-  rds_aurora_multiregion_second_publicly_assessible  = var.var_rds_aurora_mr_second_publicly_assessible
   rds_aurora_multiregion_skip_final_snapshot         = var.var_rds_aurora_mr_skip_final_snapshot
   rds_aurora_multiregion_subnet_group_name           = module.vpc.output_vpc_database_subnet_group_name
   rds_aurora_multiregion_vpc_id                      = module.vpc.output_vpc_vpc_id

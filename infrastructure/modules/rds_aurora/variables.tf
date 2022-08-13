@@ -7,11 +7,6 @@ variable "rds_aurora_multiregion_first_publicly_assessible"{
   type = bool
 }
 
-variable "rds_aurora_multiregion_second_instance_identifier" {}
-variable "rds_aurora_multiregion_second_instance_class"{}
-variable "rds_aurora_multiregion_second_publicly_assessible"{
-  type = bool
-}
 variable "rds_aurora_multiregion_vpc_id"{}
 variable "rds_aurora_multiregion_subnet_group_name"{}
 variable "rds_aurora_multiregion_create_db_subnet_group"{

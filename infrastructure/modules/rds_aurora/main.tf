@@ -47,11 +47,6 @@ module "rds_aurora" {
       instance_class = var.rds_aurora_multiregion_first_instance_class
       publicly_accessible = var.rds_aurora_multiregion_first_publicly_assessible
     }
-    2 = {
-      identifier   = var.rds_aurora_multiregion_second_instance_identifier
-      instance_class = var.rds_aurora_multiregion_second_instance_class
-      publicly_accessible = var.rds_aurora_multiregion_second_publicly_assessible
-    }
   }
   vpc_id = var.rds_aurora_multiregion_vpc_id
   db_subnet_group_name = var.rds_aurora_multiregion_subnet_group_name
