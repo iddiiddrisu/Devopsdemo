@@ -1,3 +1,6 @@
+######################################################################
+###################### ec2 Section ###################################
+#Create ec2 instance
 resource "aws_instance" "ec2_instance" {
   ami = var.ec2instance_ami_id
   instance_type = var.ec2instance_instance_class
@@ -28,5 +31,6 @@ resource "aws_instance" "ec2_instance" {
     Product = var.ec2instance_product_name
     ENV = var.ec2instance_environment
   }
+  #init configuration
   user_data = file("${path.module}/files/cloud_init.sh")
 }

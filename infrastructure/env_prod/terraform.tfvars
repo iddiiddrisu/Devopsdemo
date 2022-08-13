@@ -12,6 +12,7 @@ vpc_enable_nat_gateway             = true
 vpc_enable_single_nat_gateway      = true
 vpc_global_environment             = "prod"
 vpc_name                           = "vpc"
+#three subnets each for HA 
 vpc_private_database_subnets_cidrs = ["10.20.20.0/24", "10.20.21.0/24", "10.20.22.0/24"]
 vpc_private_subnets_cidrs          = ["10.20.10.0/24", "10.20.11.0/24", "10.20.12.0/24"]
 vpc_public_subnets_cidrs           = ["10.20.0.0/24", "10.20.1.0/24", "10.20.2.0/24"]
