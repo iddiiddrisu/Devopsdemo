@@ -34,23 +34,6 @@ var_secgroup_mysql_allow_egress_cidrs_list               = ["0.0.0.0/0"]
 var_secgroup_public_elb_allow_egress_cidrs_list          = ["0.0.0.0/0"]
 var_secgroup_single_multiregion_rds_allowed_ingress_cidr = "10.25.0.0/16"
 
-var_rds_aurora_mr_apply_immediately       = true
-var_rds_aurora_mr_cloudwatch_logs_exports = ["audit", "error", "general", "slowquery"]
-var_rds_aurora_mr_cluster_gr_family       = "aurora-mysql5.7"
-var_rds_aurora_mr_cluster_param_gr_name   = "multiregion-cluster-param-group"
-var_rds_aurora_mr_create_db_subnet_group  = false
-var_rds_aurora_mr_create_security_group   = false
-var_rds_aurora_mr_engine                    = "aurora-mysql"
-var_rds_aurora_mr_engine_version            = "5.7.mysql_aurora.2.10.2"
-var_rds_aurora_mr_first_instance_class      = "db.t3.micro"
-var_rds_aurora_mr_first_instance_identifier = "aurora-1"
-var_rds_aurora_mr_first_publicly_assessible = false
-var_rds_aurora_mr_iam_authentication_enable = true
-var_rds_aurora_mr_identifier                = "aurora"
-var_rds_aurora_mr_param_gr_family            = "aurora-mysql5.7"
-var_rds_aurora_mr_param_gr_name              = "multiregion-param-group"
-var_rds_aurora_mr_skip_final_snapshot        = true
-
 var_global_ec2instance_aws_ami_owner_list               = ["099720109477"]
 var_global_ec2instance_filter_full_ref_list             = ["ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*"]
 var_global_ec2instance_filter_virtualiazation_type_list = ["hvm"]
@@ -78,6 +61,14 @@ var_iam_ecs_task_role_name               = "ecs-task-role"
 var_load_balancer_default_tg_name = "defaultTG"
 var_load_balancer_name = "endpoint"
 
-var_rds_aurora_multiregion_parameter_max_con = 500
+var_rds_mysql_db_parameter_max_con = 200
 
 var_iam_ec2_secret_manager_readwrite_resource_name = "custom-secretsmanager"
+
+var_rds_mysql_db_param_gr_family = "mysql5.7"
+var_rds_mysql_db_family = "mysql5.7"
+var_rds_mysql_db_engine = "mysql"
+var_rds_mysql_db_major_engine_version = "5.7"
+var_rds_mysql_db_engine_version = "5.7.38"
+var_rds_mysql_db_instance_class = "db.t3.micro"
+var_rds_mysql_db_create_subnet_group = false
