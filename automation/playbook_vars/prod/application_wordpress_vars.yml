@@ -45,7 +45,7 @@ application_wordpress_server_task_container_env:
   - name: WORDPRESS_DATABASE_PORT_NUMBER
     value: "4417"
   - name: APACHE_HTTP_PORT_NUMBER
-    value: "8080"
+    value: "{{ global_var_services_details.wordpressserver.containerPort }}"
 
 application_wordpress_server_task_container_log_driver: awslogs
 application_wordpress_server_task_container_log_logsgroup: "{{ global_var_product }}-{{ global_var_environment }}-ecsgroup"
