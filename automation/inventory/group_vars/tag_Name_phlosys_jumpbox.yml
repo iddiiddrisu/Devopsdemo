@@ -1,0 +1,1 @@
+ansible_ssh_common_args: '-o ProxyCommand="ssh -o StrictHostKeyChecking=no -i /root/ansible/automation/inventory/group_vars/prod_phlosys.pem -W %h:%p -q ubuntu@54.246.19.101"'
