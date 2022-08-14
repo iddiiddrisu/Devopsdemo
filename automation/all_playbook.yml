@@ -1,0 +1,8 @@
+---
+- import_playbook: aws_fact_gatherer_playbook.yml
+- import_playbook: aws_setup_service_discovery_route53_playbook.yml
+- import_playbook: aws_setup_mysql_playbook.yml
+- import_playbook: application_wordpress_playbook.yml
+
+
+#ansible-playbook -i inventory -u ubuntu --private-key prod_phlosys.pem all_playbook.yml --vault-password-file vault.password -e "global_var_environment=prod"  --skip-tags facts

@@ -1,0 +1,139 @@
+
+
+- hosts: localhost
+  connection: local
+  gather_facts: yes
+  vars_files:
+    - "playbook_vars/{{ global_var_environment }}/vault/{{ global_var_environment }}_variables.vault"
+    - "playbook_vars/{{ global_var_environment }}/global_vars.yml"
+  tasks:
+    - name: Pulling VPC facts
+      ec2_vpc_net_info:
+        region: "{{ global_var_primary_region }}"
+        filters:
+          cidr: "{{ global_var_vpc_cidr }}"
+      register: reg_vpc_details
+      tags:
+        - always
+
+    - name: List of current namespace
+      shell: "aws servicediscovery list-namespaces --region {{global_var_primary_region}} --profile {{ global_var_profile }}"
+      register: reg_manual_namespace_list
+      tags:
+        - always
+
+    - name: Creating json object out of the output of listed namespace
+      set_fact:
+        NamespaceList: "{{ reg_manual_namespace_list.stdout | from_json }}"
+      tags:
+        - always
+      when: reg_manual_namespace_list.changed
+
+    # - debug: var=NamespaceList
+
+    - name: Saving the extracted namespace name from the returned list
+      set_fact:
+        NamspacesExtracted: "{{ NamespaceList.Namespaces | map(attribute='Name')|list }}"
+      tags:
+        - always
+
+    - name: Creating private aws service discovery namespace
+      shell: "aws servicediscovery create-private-dns-namespace --name {{ global_var_priv_dns_namespace }} --vpc {{ reg_vpc_details.vpcs.0.id}} --region {{global_var_primary_region}} --profile {{ global_var_profile }}"
+      register: reg_create_namespace
+      tags:
+        - create
+      when:
+        - (NamespaceList.Namespaces | length==0 ) or global_var_priv_dns_namespace not in NamspacesExtracted
+
+    - debug: var=reg_create_namespace
+
+    # - debug: var=reg_create_namespace
+
+    - name: Getting the id of created namespace
+      shell: "aws servicediscovery get-operation --operation-id {{ (reg_create_namespace.stdout | from_json).OperationId }} --region {{global_var_primary_region}} --profile {{ global_var_profile }}"
+      register: reg_dns_operation_details
+      tags:
+        - create
+      when:
+        - (NamespaceList.Namespaces | length  ==0 ) or global_var_priv_dns_namespace not in NamspacesExtracted
+
+    - name: Making sure the namespace is completely created
+      shell: "aws servicediscovery get-operation --operation-id {{ (reg_create_namespace.stdout | from_json).OperationId }} --region {{global_var_primary_region}} --profile {{ global_var_profile }}"
+      register: operation_details
+      until:  (operation_details.stdout | from_json).Operation.Status == "SUCCESS"
+      retries: 10
+      delay: 5
+      tags:
+        - create
+      when:
+        - (NamespaceList.Namespaces | length==0 ) or global_var_priv_dns_namespace not in NamspacesExtracted
+
+
+    - name: extracting namespace id from created operation
+      set_fact:
+        NamespaceId: "{{ (reg_dns_operation_details.stdout | from_json).Operation.Targets.NAMESPACE }}"
+      when: (NamespaceList.Namespaces | length==0 ) or global_var_priv_dns_namespace not in NamspacesExtracted
+      tags:
+        - always
+
+    - name: extracting namespace id from namespace list
+      set_fact:
+        NamespaceId: "{{ item.Id }}"
+      loop: "{{ NamespaceList.Namespaces }}"
+      when:
+      - (NamespaceList.Namespaces | length > 0 )
+      - global_var_priv_dns_namespace in NamspacesExtracted
+      - global_var_priv_dns_namespace == item.Name
+      tags:
+        - always
+
+    - name: Get the list of already created services
+      shell: "aws servicediscovery list-services  --filters \"Name=NAMESPACE_ID,Values={{ NamespaceId }}\" --region {{ global_var_primary_region }} --profile {{ global_var_profile }}"
+      register: reg_manual_serviceslist_details
+      tags:
+        - always
+
+
+    - name: Creating json object out of the service list retrieved
+      set_fact:
+        ServiceListJson: "{{ reg_manual_serviceslist_details.stdout | from_json }}"
+      tags:
+        - always
+      when: reg_manual_serviceslist_details.changed
+
+    # - debug: var=ServiceListJson
+    - name: Creating a simple list with the service names extracted
+      set_fact:
+        SimpleServiceList: "{{ (reg_manual_serviceslist_details.stdout | from_json).Services | map(attribute='Name') | list }}"
+      tags:
+        - always
+      when: reg_manual_serviceslist_details.changed
+
+    # - debug: var=ServiceListJson
+    # - debug: var=SimpleServiceList
+
+    - name: Creating all services
+      shell: "aws servicediscovery create-service --name {{ item.value.name }} --dns-config 'NamespaceId=\"{{ NamespaceId }}\",DnsRecords=[{Type=\"A\",TTL=\"300\"}]' --health-check-custom-config FailureThreshold=1 --region {{ global_var_primary_region }} --profile {{ global_var_profile }}"
+      register: reg_createservices_details
+      with_dict: "{{ global_var_services_details }}"
+      tags:
+        - create
+      when:
+        - global_var_services_details is defined
+        - item.value.name not in SimpleServiceList
+
+    - name: Getting hosted zone ID from route53
+      route53_info:
+        query: hosted_zone
+        hosted_zone_method: list_by_name
+        dns_name: "{{ global_var_priv_dns_namespace }}"
+      register: reg_servicediscovery_facts
+
+    - name: Attaching hosted zone to our VPC
+      route53_zone:
+        zone: "{{ global_var_priv_dns_namespace }}"
+        vpc_region: "{{ global_var_primary_region }}"
+        hosted_zone_id: "{{ reg_servicediscovery_facts.HostedZones.0.Id }}"
+        region: "{{ global_var_primary_region }}"
+        state: present # not required. choices: present;absent. whether or not the zone should exist or not
+        vpc_id: "{{ reg_vpc_details.vpcs.0.id}}"
