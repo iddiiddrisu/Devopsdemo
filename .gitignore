@@ -136,3 +136,4 @@ dmypy.json
 .terraform
 credentials.tfvars
 .terraform.lock.hcl
+automation/inventory/group_vars/prod_phlosys.pem

@@ -54,8 +54,6 @@ class SmartGridDbBackup:
         self.upload_to_s3(tar_name, tar_name)
         print("backup completed succesfully...")
 
-        # except Exception as e:
-        #    print(e)
 
     # Function to upload to the s3 bucket
     def upload_to_s3(self, filename, myfile):
@@ -63,9 +61,6 @@ class SmartGridDbBackup:
         secret_key = self.config.get('backup', 'secret_key')
         bucket = self.config.get('backup', 'bucket')
         backup_path = self.config.get('backup', 'backup_path')
-
-        # s3 = boto3.client('s3', aws_access_key_id=access_key,
-        #         aws_secret_access_key=secret_key)
 
         s3 = boto3.resource('s3', aws_access_key_id=access_key,
                             aws_secret_access_key=secret_key)
