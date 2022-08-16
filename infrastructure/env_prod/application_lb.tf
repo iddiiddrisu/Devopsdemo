@@ -1,3 +1,5 @@
+######################################################################
+###################### ALB Implementation ############################
 module "alb" {
   source = "../modules/load_balancer"
   load_balancer_default_targetgroup_name ="${local.global_prefix}-${var.var_load_balancer_default_tg_name}"

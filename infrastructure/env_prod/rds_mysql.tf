@@ -1,3 +1,5 @@
+######################################################################
+###################### RDS Implementation ###################################
 module "rds_mysql" {
   source = "../modules/rds_mysql"
   rds_mysql_db_allocated_storage = "20"

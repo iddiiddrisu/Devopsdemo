@@ -1,3 +1,5 @@
+######################################################################
+################# Security Groups Implementation #####################
 module "securitygroups" {
   source                                               = "../modules/security_groups"
   secgroup_app_ecs_group_name                          = "${local.global_prefix}-${var.var_secgroup_app_ecs_group_name}"

@@ -1,4 +1,5 @@
-
+######################################################################
+###################### EC2 Implementation ############################
 module "jumpbox_instance" {
   source = "../modules/ec2_instance"
   ec2instance_ami_id = data.aws_ami.ec2_instance_type.id
