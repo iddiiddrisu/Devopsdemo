@@ -1,0 +1,23 @@
+jumpbox_mysql_create_database_dependencies_apps_list:
+  - mysql-client
+  - python3-pymysql
+
+jumpbox_mysql_create_database_details:
+- {
+  root_username: "{{ vault_main_mysql_root_username }}",
+  root_password: "{{ vault_main_mysql_root_password }}",
+  db_name: "{{ vault_main_mysql_app_dbname }}",
+  db_host: "{{ global_var_mysql_endpoint_tmp }}",
+  db_port: "{{ global_var_mysql_port }}"
+}
+
+jumpbox_mysql_create_user_details:
+  - {
+    app_username: "{{ vault_mysql_app_username }}",
+    app_password: "{{ vault_mysql_app_password }}",
+    root_username: "{{ vault_main_mysql_root_username }}",
+    root_password: "{{ vault_main_mysql_root_password }}",
+    db_name: "{{ vault_main_mysql_app_dbname }}",
+    db_host: "{{ global_var_mysql_endpoint_tmp }}",
+    db_port: "{{ global_var_mysql_port }}"
+  }

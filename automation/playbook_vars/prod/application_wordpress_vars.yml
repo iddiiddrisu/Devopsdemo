@@ -1,0 +1,84 @@
+
+application_wordpress_server_enabled: true
+application_wordpress_active_region: "{{ global_var_ecs_region }}"
+application_wordpress_active_priv_dns_namespace: "{{ global_var_priv_dns_namespace }}"
+application_wordpress_server_task_family_name: "{{ global_var_product }}-{{global_var_environment}}-{{ global_var_services_details.wordpressserver.name }}"
+application_wordpress_server_task_networkmode: awsvpc
+application_wordpress_server_task_executionRoleArn: "{{ hostvars.localhost.reg_ecs_role_facts.iam_roles.0.arn }}"
+application_wordpress_server_task_ecsmode: FARGATE
+application_wordpress_server_task_cpu: 256
+application_wordpress_server_task_memory: 1024
+application_wordpress_server_task_container_name: "{{ global_var_services_details.wordpressserver.name }}"
+application_wordpress_server_task_container_image: "{{ global_var_services_details.wordpressserver.image }}"
+application_wordpress_server_task_container_cpu: 256
+application_wordpress_server_task_container_memory: 1024
+application_wordpress_server_task_container_memoryReservation: 256
+application_wordpress_server_task_container_essential: true
+application_wordpress_server_task_container_secretenv_definition:
+  databasename:
+    id: "{{ global_var_environment }}_APP_MYSQL_DBNAME"
+    name: APP_MYSQL_DBNAME
+    content: "{{ vault_main_mysql_app_dbname }}"
+  databaseusername:
+    id: "{{ global_var_environment }}_APP_MYSQL_USERNAME"
+    name: APP_MYSQL_USERNAME
+    content: "{{ vault_mysql_app_username }}"
+  databasepassword:
+    id: "{{ global_var_environment }}_APP_MYSQL_PASSWORD"
+    name: APP_MYSQL_PASSWORD
+    content: "{{ vault_mysql_app_password }}"
+
+application_wordpress_server_task_container_secretenv:
+  - valueFrom: "{{ global_var_environment }}_APP_MYSQL_DBNAME"
+    name: WORDPRESS_DATABASE_NAME
+  - valueFrom: "{{ global_var_environment }}_APP_MYSQL_USERNAME"
+    name: WORDPRESS_DATABASE_USER
+  - valueFrom: "{{ global_var_environment }}_APP_MYSQL_PASSWORD"
+    name: WORDPRESS_DATABASE_PASSWORD
+
+
+application_wordpress_server_task_container_env:
+  - name: WORDPRESS_DATABASE_HOST
+    value: "{{ global_var_mysql_endpoint_tmp }}"
+  - name: WORDPRESS_TABLE_PREFIX
+    value: "phlosys"
+  - name: WORDPRESS_DATABASE_PORT_NUMBER
+    value: "4417"
+  - name: APACHE_HTTP_PORT_NUMBER
+    value: "{{ global_var_services_details.wordpressserver.containerPort }}"
+
+application_wordpress_server_task_container_log_driver: awslogs
+application_wordpress_server_task_container_log_logsgroup: "{{ global_var_product }}-{{ global_var_environment }}-ecsgroup"
+application_wordpress_server_task_container_log_logsregion: "{{ global_var_ecs_region }}"
+application_wordpress_server_task_container_log_logsprefix: "{{ global_var_product }}-{{ global_var_environment }}-"
+application_wordpress_alb_arn: "{{ hostvars.localhost.reg_alb_facts.load_balancers.0.load_balancer_arn }}"
+application_wordpress_service_name: "{{global_var_product}}-{{global_var_environment}}-{{ global_var_services_details.wordpressserver.name }}-service"
+application_wordpress_targetgroup_name: "{{ global_var_product }}-{{ global_var_environment }}-{{ global_var_services_details.wordpressserver.application_name }}TG"
+application_wordpress_targetgroup_protocol: "http"
+application_wordpress_targetgroup_success_http_code: 200
+application_wordpress_targetgroup_hc_interval: 6
+application_wordpress_targetgroup_hc_timeout: 5
+application_wordpress_targetgroup_hc_healthycount: 3
+application_wordpress_targetgroup_hc_unhealthycount: 3
+application_wordpress_targetgroup_hc_path: "/"
+application_wordpress_targetgroup_hc_protocol: "http"
+application_wordpress_targetgroup_targettype: "ip"
+
+application_wordpress_service_count: 1
+application_wordpress_service_platform_version: 1.4.0
+application_wordpress_service_hc_graceperiod: 120
+application_wordpress_service_autoscalling_policy_type: "TargetTrackingScaling"
+application_wordpress_service_autoscalling_min_task: "{{ application_wordpress_service_count }}"
+application_wordpress_service_autoscalling_max_task: 3
+application_wordpress_service_mem_autoscalling_policy_name: "{{ application_wordpress_server_task_family_name }}-mem-as-policy"
+application_wordpress_service_cpu_autoscalling_policy_name: "{{ application_wordpress_server_task_family_name }}-cpu-as-policy"
+application_wordpress_service_mem_autoscalling_tracking_scaling_target_value: 70
+application_wordpress_service_cpu_autoscalling_tracking_scaling_target_value: 50
+application_wordpress_service_mem_autoscalling_tracking_scaling_metric_spec: "ECSServiceAverageMemoryUtilization"
+application_wordpress_service_cpu_autoscalling_tracking_scaling_metric_spec: "ECSServiceAverageCPUUtilization"
+application_wordpress_service_mem_autoscalling_tracking_scalout_cooldown: 60
+application_wordpress_service_mem_autoscalling_tracking_scalin_cooldown: 60
+application_wordpress_service_cpu_autoscalling_tracking_scalout_cooldown: 120
+application_wordpress_service_cpu_autoscalling_tracking_scalin_cooldown: 180
+
+

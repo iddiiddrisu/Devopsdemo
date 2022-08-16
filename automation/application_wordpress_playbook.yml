@@ -1,0 +1,180 @@
+- import_playbook: aws_fact_gatherer_playbook.yml
+  tags:
+    - facts
+
+- import_playbook: aws_setup_service_discovery_route53_playbook.yml
+  tags:
+    - facts
+
+- hosts: localhost
+  connection: local
+  gather_facts: yes
+  vars_files:
+    - playbook_vars/{{ global_var_environment }}/global_vars.yml
+    - playbook_vars/{{ global_var_environment }}/application_wordpress_vars.yml
+    - playbook_vars/{{ global_var_environment }}/vault/{{ global_var_environment }}_variables.vault
+  tasks:
+    - name: Extracting ARN from service discovery
+      set_fact:
+        reg_wordpress_sd_dns_details: "{{ ServiceListJson | json_query(\"Services[?Name=='\" + global_var_services_details.wordpressserver.name+\"']\") }}"
+
+    - name: Setup || Creating ECS Cluster
+      ecs_cluster:
+        name: "{{ global_var_ecs_clustername }}"
+        state: present
+        region: "{{ global_var_ecs_region }}"
+      when: global_var_ecs_clustername is defined
+
+    - name:  wordpress ||  Creating Parameter Store secrets
+      aws_ssm_parameter_store:
+        name: "{{ item.value.id }}"
+        decryption: true
+        region: "{{ global_var_ecs_region }}"
+        string_type: "SecureString"
+        value: "{{ item.value.content }}"
+        state: "{{ item.value.state | default('present')}}"
+        overwrite_value: always
+        description: "app param store"
+      with_dict: "{{ application_wordpress_server_task_container_secretenv_definition }}"
+      no_log: true
+      diff: false
+
+    - name:  wordpress || Creating wordpressServer task definition
+      ecs_taskdefinition:
+        state: present
+        family: "{{ application_wordpress_server_task_family_name }}"
+        region: "{{ global_var_ecs_region }}"
+        execution_role_arn: "{{ application_wordpress_server_task_executionRoleArn }}"
+        task_role_arn: "{{ application_wordpress_server_task_executionRoleArn }}"
+        network_mode: "{{ application_wordpress_server_task_networkmode }}"
+        launch_type: "{{ application_wordpress_server_task_ecsmode }}"
+        cpu: "{{ application_wordpress_server_task_cpu }}"
+        memory: "{{ application_wordpress_server_task_memory }}"
+        force_create: true
+        containers:
+        - name: "{{ global_var_services_details.wordpressserver.name }}"
+          image: "{{ application_wordpress_server_task_container_image }}"
+          cpu: "{{ application_wordpress_server_task_container_cpu }}"
+          memory: "{{ application_wordpress_server_task_container_memory }}"
+          portMappings:
+          - containerPort: "{{ global_var_services_details.wordpressserver.containerPort }}"
+            hostPort: "{{ global_var_services_details.wordpressserver.hostPort }}"
+          essential: "{{ application_wordpress_server_task_container_essential }}"
+          environment: "{{ application_wordpress_server_task_container_env }}"
+          secrets: "{{ application_wordpress_server_task_container_secretenv }}"
+          logConfiguration:
+            logDriver: "{{ application_wordpress_server_task_container_log_driver }}"
+            options:
+              awslogs-group: "{{ application_wordpress_server_task_container_log_logsgroup }}"
+              awslogs-region: "{{ application_wordpress_server_task_container_log_logsregion }}"
+              awslogs-stream-prefix: "{{ application_wordpress_server_task_container_log_logsprefix }}"
+      register: reg_wordpress_servertaskdef
+
+    - name:  wordpress || Obtaining target group facts
+      elb_target_group_info:
+        names: "{{ application_wordpress_targetgroup_name }}"
+        region: "{{ global_var_ecs_region }}"
+      register: reg_application_wordpress_target_group_facts
+
+    - name:  wordpress || Creating wordpress target group public
+      elb_target_group:
+        name: "{{ application_wordpress_targetgroup_name }}"
+        state: present
+        protocol: "{{ application_wordpress_targetgroup_protocol }}"
+        successful_response_codes: "{{ application_wordpress_targetgroup_success_http_code }}"
+        wait_timeout: 200
+        health_check_interval: "{{ application_wordpress_targetgroup_hc_interval }}"
+        modify_targets: true
+        healthy_threshold_count: "{{ application_wordpress_targetgroup_hc_healthycount }}"
+        health_check_path: "{{ application_wordpress_targetgroup_hc_path }}"
+        health_check_protocol: "{{ application_wordpress_targetgroup_hc_protocol }}"
+        unhealthy_threshold_count: "{{ application_wordpress_targetgroup_hc_unhealthycount }}"
+        region: "{{ global_var_ecs_region }}"
+        target_type: "{{ application_wordpress_targetgroup_targettype }}"
+        port: 80
+        vpc_id: "{{ hostvars.localhost.reg_vpc_facts.vpcs.0.id }}"
+        health_check_timeout: "{{ application_wordpress_targetgroup_hc_timeout }}"
+      register: reg_wordpress_targetgroup
+      when:
+      - reg_application_wordpress_target_group_facts | length == 0
+
+    - debug: var=hostvars.localhost.reg_alb_facts.load_balancers
+    - debug: var=reg_application_wordpress_target_group_facts
+
+    - name:  wordpress || Obtaining target group facts
+      elb_target_group_info:
+        names: "{{ application_wordpress_targetgroup_name }}"
+        region: "{{ global_var_ecs_region }}"
+      register: reg_application_wordpress_target_group_facts
+
+    - name:  wordpress || Associating public target group to a ALB listener for wordpress
+      shell: >
+          aws elbv2 create-rule --listener-arn {{ hostvars.localhost.reg_alb_facts.load_balancers.0.listeners.0.listener_arn }}
+          --priority {{ global_var_services_details.wordpressserver.albPriority }}
+          --conditions file://files/{{ global_var_environment }}_wordpress_alb_conditions.json
+          --actions Type=forward,TargetGroupArn={{ reg_application_wordpress_target_group_facts.target_groups.0.target_group_arn }}
+          --region {{ global_var_ecs_region }}
+          --profile {{ global_var_profile }}
+
+
+    - name:  wordpress || Creating log group
+      community.aws.cloudwatchlogs_log_group:
+        state: present
+        log_group_name: "{{application_wordpress_server_task_container_log_logsgroup}}"
+
+    - name:  wordpress || Creating or Updating the ECS service wordpressserver
+      ecs_service:
+        state: present
+        name: "{{ application_wordpress_service_name }}"
+        service_registries:
+          - registryArn: "{{ hostvars.localhost.reg_wordpress_sd_dns_details.0.Arn }}"
+        network_configuration:
+            assign_public_ip: no
+            security_groups: "{{ hostvars.localhost.reg_app_secgroup_ids_facts | list }}"
+            subnets: "{{ hostvars.localhost.reg_private_app_subnet_ids_facts | list }}"
+        desired_count: "{{ application_wordpress_service_count }}"
+        cluster: "{{ global_var_ecs_clustername }}"
+        task_definition: "{{ application_wordpress_server_task_family_name }}:{{ reg_wordpress_servertaskdef.taskdefinition.revision }}"
+        region: "{{ global_var_ecs_region }}"
+        load_balancers:
+          - targetGroupArn: "{{ reg_application_wordpress_target_group_facts.target_groups.0.target_group_arn }}"
+            containerName: "{{ global_var_services_details.wordpressserver.name }}"
+            containerPort: "{{ global_var_services_details.wordpressserver.containerPort }}"
+        launch_type: "{{ application_wordpress_server_task_ecsmode }}"
+        health_check_grace_period_seconds: "{{ application_wordpress_service_hc_graceperiod }}"
+
+    - name:  wordpress || Creating wordpress MEM Scalling Policy for {{ global_var_environment }}
+      aws_application_scaling_policy:
+        state: present
+        policy_name: "{{ application_wordpress_service_mem_autoscalling_policy_name }}"
+        service_namespace: ecs
+        region: "{{ global_var_ecs_region }}"
+        resource_id: service/{{ global_var_ecs_clustername }}/{{ application_wordpress_service_name }}
+        scalable_dimension: ecs:service:DesiredCount
+        policy_type: "{{ application_wordpress_service_autoscalling_policy_type }}"
+        minimum_tasks: "{{ application_wordpress_service_autoscalling_min_task }}"
+        maximum_tasks: "{{ application_wordpress_service_autoscalling_max_task }}"
+        target_tracking_scaling_policy_configuration:
+          TargetValue: "{{ application_wordpress_service_mem_autoscalling_tracking_scaling_target_value }}"
+          PredefinedMetricSpecification:
+            PredefinedMetricType: "{{ application_wordpress_service_mem_autoscalling_tracking_scaling_metric_spec }}"
+          ScaleOutCooldown: "{{ application_wordpress_service_mem_autoscalling_tracking_scalout_cooldown }}"
+          ScaleInCooldown: "{{ application_wordpress_service_mem_autoscalling_tracking_scalin_cooldown }}"
+
+    - name:  wordpress || Creating wordpress CPU Scalling Policy for {{ global_var_environment }}
+      aws_application_scaling_policy:
+        state: present
+        policy_name: "{{ application_wordpress_service_cpu_autoscalling_policy_name }}"
+        service_namespace: ecs
+        region: "{{ global_var_ecs_region }}"
+        resource_id: service/{{ global_var_ecs_clustername }}/{{ application_wordpress_service_name }}
+        scalable_dimension: ecs:service:DesiredCount
+        policy_type: "{{ application_wordpress_service_autoscalling_policy_type }}"
+        minimum_tasks: "{{ application_wordpress_service_autoscalling_min_task }}"
+        maximum_tasks: "{{ application_wordpress_service_autoscalling_max_task }}"
+        target_tracking_scaling_policy_configuration:
+          TargetValue: "{{ application_wordpress_service_cpu_autoscalling_tracking_scaling_target_value }}"
+          PredefinedMetricSpecification:
+            PredefinedMetricType: "{{ application_wordpress_service_cpu_autoscalling_tracking_scaling_metric_spec }}"
+          ScaleOutCooldown: "{{ application_wordpress_service_cpu_autoscalling_tracking_scalout_cooldown }}"
+          ScaleInCooldown: "{{ application_wordpress_service_cpu_autoscalling_tracking_scalin_cooldown }}"

@@ -1,0 +1,32 @@
+global_var_environment: prod
+global_var_product: phlosys
+global_var_vpc_cidr: "10.20.0.0/16"
+global_var_primary_region: eu-west-1
+global_var_ecs_region: eu-west-1
+global_var_vpc_name: prod-phlosys-vpc
+global_var_ubuntu_user: ubuntu
+global_var_profile : default
+
+
+###################### Mysql DB section ########################################
+global_var_mysql_endpoint_tmp: "prod-phlosys-db.c5rgy4imqipk.eu-west-1.rds.amazonaws.com"
+global_var_mysql_port: 4417
+
+###################### AWS Config Map Section #######################################
+global_var_priv_dns_namespace: "{{ global_var_product }}.{{ global_var_environment }}"
+
+############################## ECS Section #######################################
+global_var_iam_ecs_role: "{{ global_var_environment }}-{{ global_var_product }}-ecs-task-role"
+global_var_app_secgroup: "{{ global_var_environment }}-{{ global_var_product }}-app-ecs-secgroup"
+global_var_private_app_subnet_name: "{{ global_var_environment }}-{{ global_var_product }}-vpc-private-subnet"
+global_var_log_group: "{{ global_var_environment }}-{{ global_var_product }}-ecs-log"
+global_var_alb_name: "{{ global_var_environment }}-{{ global_var_product }}-endpoint"
+global_var_ecs_clustername: "{{ global_var_environment }}-{{ global_var_product }}-cluster"
+global_var_services_details:
+    wordpressserver:
+      name: "wordpressserver"
+      hostPort: 8080
+      containerPort: 8080
+      application_name: wordpress
+      albPriority: 1
+      image: "bitnami/wordpress:latest"
