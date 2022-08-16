@@ -1,14 +1,14 @@
 #!/usr/bin/python3
-import os, sys, configparser, subprocess, datetime, time
+import os, sys, configparser, subprocess, time
 import mysql.connector as mysc
 import boto3
 from botocore.exceptions import NoCredentialsError
 import pymsteams
 import logging
-import tarfile, gzip, shutil
+import gzip, shutil
 
 
-class SmartGridDbBackup:
+class MySqlDbBackup:
 
     def __init__(self, *args):
         try:
@@ -115,4 +115,4 @@ class SmartGridDbBackup:
 
 
 if __name__ == '__main__':
-    SmartGridDbBackup(sys.argv[1:])
+    MySqlDbBackup(sys.argv[1:])
