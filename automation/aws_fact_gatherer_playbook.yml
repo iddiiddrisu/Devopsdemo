@@ -1,0 +1,92 @@
+- hosts: localhost
+  connection: local
+  gather_facts: yes
+  vars_files:
+    - "playbook_vars/{{ global_var_environment }}/global_vars.yml"
+  tasks:
+
+    - name: Obtaining AWS Account Facts
+      aws_caller_info:
+      register: reg_aws_facts
+    # - debug: var=reg_aws_facts
+
+    - name: Obtaining facts from jumpbox in {{ global_var_primary_region }}
+      ec2_instance_info:
+        region: "{{ global_var_primary_region }}"
+        filters:
+          "tag:Name": "{{ global_var_product }}-jumpbox"
+      register: reg_jumpbox_facts
+    - debug: var=reg_jumpbox_facts
+
+    - name: Obtaining facts from RDS
+      community.aws.rds_instance_info:
+        db_instance_identifier: "prod-phlosys-db"
+        region: "{{ global_var_primary_region }}"
+      register: reg_rds_info
+    - debug: var=reg_rds_info
+
+    - name: Facts || Obtaining ECS Role facts
+      iam_role_info:
+        name: "{{ global_var_iam_ecs_role }}"
+        region: "{{ global_var_primary_region }}"
+      register: reg_ecs_role_facts
+
+    - name: Facts || Obtaining App security group
+      ec2_group_info:
+        filters:
+          "tag:Name": "{{ global_var_app_secgroup }}"
+        region: "{{ global_var_primary_region }}"
+      register: reg_app_secgroup_facts
+
+    - name: Facts || Obtaining private subnet for Apps
+      ec2_vpc_subnet_info:
+        filters:
+          "tag:Name": "{{ global_var_private_app_subnet_name }}"
+        region: "{{ global_var_primary_region }}"
+      register: reg_private_app_subnet_facts
+
+    - name: Facts || Obtaining subnet for Apps
+      ec2_vpc_subnet_info:
+        filters:
+          "tag:Name": "{{ global_var_private_app_subnet_name }}"
+        region: "{{ global_var_primary_region }}"
+      register: reg_app_subnet_facts
+
+    - name: Facts || Obtaining vpc facts
+      ec2_vpc_net_info:
+        filters:
+          "tag:Name": "{{ global_var_vpc_name }}"
+        region: "{{ global_var_primary_region }}"
+      register: reg_vpc_facts
+      # - debug: var=reg_vpc_facts
+
+    - name: Facts || Obtaining public ALB facts
+      elb_application_lb_info:
+        region: "{{ global_var_primary_region }}"
+        names:
+        - "{{ global_var_alb_name }}"
+      register: reg_alb_facts
+    # - debug: var=reg_alb_facts
+
+    - name: Facts || Obtaining kms info
+      community.aws.aws_kms_info:
+        filters:
+          "tag:Name": "{{ global_var_product }}-kms"
+        region: "{{ global_var_primary_region }}"
+      register: reg_kms_facts
+
+    - name: Set Facts || setting fact to be exported
+      set_fact:
+        reg_aws_facts: "{{ reg_aws_facts }}"
+        reg_jumpbox_facts: "{{ reg_jumpbox_facts }}"
+        reg_ecs_role_facts: "{{ reg_ecs_role_facts }}"
+        reg_app_secgroup_facts: "{{ reg_app_secgroup_facts }}"
+        reg_private_app_subnet_facts: "{{ reg_app_subnet_facts }}"
+        reg_app_secgroup_ids_facts: "{{ reg_app_secgroup_facts.security_groups | map(attribute='group_id') | list  }}"
+        reg_private_app_subnet_ids_facts: "{{ reg_private_app_subnet_facts.subnets | map(attribute='id') | list }}"
+        reg_vpc_facts: "{{ reg_vpc_facts }}"
+        reg_alb_facts: "{{ reg_alb_facts }}"
+        reg_db_uri_and_port: "{{ global_var_mysql_endpoint_tmp }}:{{ global_var_mysql_port }}"
+        reg_db_uri: "{{ global_var_mysql_endpoint_tmp }}"
+        reg_kms_facts: "{{ reg_kms_facts }}"
+

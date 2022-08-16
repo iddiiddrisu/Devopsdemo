@@ -1,0 +1,42 @@
+---
+- import_playbook: aws_fact_gatherer_playbook.yml
+  tags:
+  - facts
+
+- hosts: "tag_Name_phlosys_jumpbox"
+  become: True
+#  gather_facts: true
+  user: "{{ global_var_ubuntu_user }}"
+  vars_files:
+  - "playbook_vars/{{ global_var_environment }}/database_mysql_vars.yml"
+  - "playbook_vars/{{ global_var_environment }}/vault/{{ global_var_environment }}_variables.vault"
+  - "playbook_vars/{{ global_var_environment }}/global_vars.yml"
+  tasks:
+  - name: Insall Mysql Dependencies
+    apt:
+      pkg: "{{ jumpbox_mysql_create_database_dependencies_apps_list }}"
+
+  - name: Create App and subapps Databases
+    community.mysql.mysql_db:
+      name: "{{ item.db_name }}"
+      state: present
+      login_user: "{{ item.root_username }}"
+      login_password: "{{ item.root_password }}"
+      login_host: "{{ item.db_host }}"
+      login_port: "{{ item.db_port }}"
+    with_items: "{{ jumpbox_mysql_create_database_details | default({}) }}"
+    when: jumpbox_mysql_create_database_details is defined
+
+  - name: Create Users for Apps
+    community.mysql.mysql_user:
+      name: "{{ item.app_username }}"
+      password: "{{ item.app_password }}"
+      priv: "{{ item.db_name }}.*:{{ item.db_privileges | default('ALL,GRANT') }}"
+      state: present
+      host: "%"
+      login_user: "{{ item.root_username }}"
+      login_password: "{{ item.root_password }}"
+      login_host: "{{ item.db_host }}"
+      login_port: "{{ item.db_port }}"
+    with_items: "{{ jumpbox_mysql_create_user_details | default({}) }}"
+    when: jumpbox_mysql_create_user_details is defined

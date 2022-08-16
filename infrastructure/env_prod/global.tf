@@ -43,3 +43,20 @@ data "aws_iam_policy_document" "rds" {
     }
   }
 }
+
+data "aws_ami" "ec2_instance_type" {
+  owners      = var.var_global_ec2instance_aws_ami_owner_list
+  most_recent = true
+  filter {
+    name   = "name"
+    values = var.var_global_ec2instance_filter_full_ref_list
+  }
+  filter {
+    name   = "virtualization-type"
+    values = var.var_global_ec2instance_filter_virtualiazation_type_list
+  }
+  filter {
+    name   = "image-id"
+    values = ["ami-0a2616929f1e63d91"]
+  }
+}
